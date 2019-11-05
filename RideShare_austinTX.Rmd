@@ -2,7 +2,9 @@
 title: "RideShare in Austin"
 author: "Francisco Marquez"
 date: "11/4/2019"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -23,7 +25,7 @@ library(ggthemes)
 
 ```{r data_load}
 df<-read_csv('atx_dwi_pi.csv')
-df%>%glimpse()
+#df%>%glimpse()
 ```
 
 ## What does data look like
