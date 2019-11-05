@@ -1,0 +1,71 @@
+---
+title: "RideShare in Austin"
+author: "Francisco Marquez"
+date: "11/4/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(httr)
+library(jsonlite)
+library(nnet)
+library(twitteR)
+library(stringr)
+library(lubridate)
+library(tidyverse)
+```
+
+## R Markdown
+
+
+
+```{r data_load}
+df<-read_csv('atx_dwi_pi.csv')
+df%>%glimpse()
+```
+
+## What does data look like
+
+
+
+```{r pressure, echo=FALSE}
+df%>%
+  rename(crime_type=`Highest Offense Description`,
+         occ_datetime=`Occurred Date Time`)%>%
+  mutate(datetime=mdy_hms(occ_datetime))%>%
+  mutate(date=date(datetime))%>%
+  filter(crime_type%in%c('DWI','PUBLIC INTOXICATION'))%>%
+  filter(date>'2014-10-01')%>%
+  mutate(fdate=floor_date(date,unit='month'))%>%
+  mutate(rs = case_when(date>='2017-05-29'~1,
+                       date<='2016-05-01'~1,
+                       TRUE ~ 0))%>%
+  group_by(crime_type,date,crime_type,rs)%>%summarise(events=n())%>%select(date,events,crime_type,rs)%>%
+  ggplot(aes(x=date,y=events,color=as.factor(rs)))+geom_point()
+```
+
+Okay, data looks messy. I'm going to group by month
+
+```{r grouped}
+mly_dat<-df%>%
+  rename(crime_type=`Highest Offense Description`,
+         occ_datetime=`Occurred Date Time`)%>%
+  mutate(datetime=mdy_hms(occ_datetime))%>%
+  mutate(date=date(datetime))%>%
+  filter(date>'2014-10-01')%>%
+  filter(crime_type%in%c('DWI','PUBLIC INTOXICATION'))%>%
+  mutate(fdate=floor_date(date,unit='month'))%>%
+  mutate(rs = case_when(date>='2017-05-29'~0,
+                        date<='2016-05-01'~0,
+                        TRUE ~ 1))%>%
+  mutate(rs=as.factor(rs))%>%
+  group_by(crime_type,fdate,rs)%>%summarise(events=n())%>%select(fdate,crime_type,rs,events)%>%ungroup()%>%
+  mutate(tl = 1:n())
+
+
+#post = no rideshare
+mly_dat%>%
+  ggplot(aes(x=fdate,y=events,color=crime_type))+geom_point()
+```
+
