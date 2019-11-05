@@ -91,6 +91,10 @@ mly_dat%>%head()
 mly_dat%>%
   ggplot(aes(x=fdate,y=events,color=crime_type))+geom_point()
 
+mly_dat%>%
+  ggplot(aes(x=fdate,y=events,color=rs))+geom_point()+facet_wrap(~crime_type)+
+  labs(x='Date',y='Arrests',title='Austin Arrest Cases',color='RideShare Unavailable',subtitle = '')
+
 
 
 #Difference in Difference Approach
